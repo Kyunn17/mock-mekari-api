@@ -69,15 +69,29 @@ app.get('/v2/talenta/v2/live-attendance/location', (c) => {
   return c.json({ message: 'Get Live Attendance Location Successfully', data: { locations: liveLocations(user) } })
 })
 
-app.get('/v2/talenta/v2/attendance/activities', (c) => {
-  const today = new Date().toISOString().slice(0, 10)
-  const start = c.req.query('start_date') ?? today
-  const end = c.req.query('end_date') ?? start
-  if (!isDate(start) || !isDate(end) || end < start) {
-    return c.json({ message: 'start_date/end_date must be YYYY-MM-DD and end_date >= start_date' }, 400)
+app.get('/v2/talenta/v2/attendance/:userId/activities', (c) => {
+  const user = findUser(c.req.param('userId'))
+  if (!user) return c.json({ message: 'User not found' }, 404)
+
+  const start = c.req.query('start_date')
+  const end = c.req.query('end_date')
+  if (!start || !end || !isDate(start) || !isDate(end) || end < start) {
+    return c.json({ message: 'start_date and end_date (YYYY-MM-DD) are required' }, 400)
   }
-  const activities = eachDate(start, end).flatMap((d) => attendanceActivities(d))
-  return c.json({ message: 'Get Attendance Activities Successfully', data: { activities } })
+  const page = Math.max(1, Number(c.req.query('page') ?? 1) || 1)
+  const limit = Math.min(100, Math.max(1, Number(c.req.query('limit') ?? 10) || 10))
+
+  const all = eachDate(start, end)
+    .flatMap((d) => attendanceActivities(d) as any[])
+    .filter((a) => a.employee_id_fk === user.user_id)
+
+  return c.json({
+    message: 'Get Attendance Activities Successfully',
+    data: {
+      activities: all.slice((page - 1) * limit, page * limit),
+      pagination: { page, limit, total: all.length },
+    },
+  })
 })
 
 app.get('/v2/talenta/v2/attendance/:userId/history-list', (c) => {

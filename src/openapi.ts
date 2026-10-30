@@ -42,7 +42,9 @@ export const openapi = {
       '**Autentikasi:** API asli memakai HMAC (header `Date` + `Authorization`). Mock ini tidak memeriksa tanda tangan; ' +
       'jika dijalankan dengan `REQUIRE_AUTH=true`, request tanpa kedua header itu akan ditolak 401.',
   },
-  servers: [{ url: 'http://localhost:3000', description: 'Lokal' }],
+  servers: [{ url: 'http://localhost:3000', description: 'Lokal' },
+            { url: 'https://mock-mekari-api.vercel.app', description: 'Vercell' }
+  ],
   tags: [
     { name: 'Employee', description: 'Data pegawai, organisasi, status kepegawaian (tujuan 1 dan 3)' },
     { name: 'Attendance', description: 'Riwayat absen dan lokasi (tujuan 1 dan 2)' },
@@ -119,14 +121,15 @@ export const openapi = {
         },
       },
     },
-    '/v2/talenta/v2/attendance/activities': {
+    '/v2/talenta/v2/attendance/{userId}/activities': {
       get: {
         tags: ['Attendance'],
-        summary: 'Attendance activities (TAMBAHAN, path ASUMSI)',
+        summary: 'Attendance activities',
         description:
           'Kejadian absen beserta koordinat (`location_coordinate`). Diperlukan untuk tujuan 1, karena history-list hanya punya `has_location`. ' +
           'Path dan parameter belum dipastikan dari dokumentasi asli.',
         parameters: [
+          pathParam('userId', 'user_id atau employee_id pegawai', 2001),
           query('start_date', 'Tanggal awal (YYYY-MM-DD). Default: hari ini', { type: 'string', format: 'date' }),
           query('end_date', 'Tanggal akhir (YYYY-MM-DD). Default: start_date. Maks 62 hari', { type: 'string', format: 'date' }),
         ],

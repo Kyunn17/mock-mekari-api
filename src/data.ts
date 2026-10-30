@@ -245,6 +245,11 @@ export function attendanceActivities(date: string) {
         location_coordinate: coord,
         location_name: visiting ? CLIENT.name : OFFICE.name,
         mobile_flag: 'Mobile App',
+        device_id: null,
+        face_accuracy: null,
+        mask: null,
+        temperature: null,
+      photo: { id: e.user_id * 1000 + day * 10 + k, is_image: true, name_file: null, url: null },
       })
     }
   }
